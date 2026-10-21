@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-	HTML2TWiki Translation v0.3
+	HTML2TWiki Translation v0.4
 	http://elmuerte.com/html2twiki
 
 HTML to TWiki markup XSLT
@@ -28,7 +28,6 @@ http://www.gnu.org/licenses/lgpl.txt
 -->
 <!--
 	TODO:
-	* use \ before newlines in content of list items
 	* table support?
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -43,13 +42,12 @@ http://www.gnu.org/licenses/lgpl.txt
 
 	<!-- normalize plain text -->
 	<xsl:template match="text()" mode="twiki">
-		<xsl:call-template name="normalize-inner">
-			<!--<xsl:with-param name="str">
-				<xsl:call-template name="compact-string">-->
-					<xsl:with-param name="str" select="." />
-				<!--</xsl:call-template>
-			</xsl:with-param>-->
-		</xsl:call-template>
+		<xsl:variable name="res">
+			<xsl:call-template name="normalize-inner">
+				<xsl:with-param name="str" select="." />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:value-of select="$res" />
 	</xsl:template>
 	
 	<!-- headings -->
@@ -117,25 +115,28 @@ http://www.gnu.org/licenses/lgpl.txt
 	
 	<!-- keep the br tag -->
 	<xsl:template match="br" mode="twiki">
-		<xsl:text>&lt;br /&gt;</xsl:text>
+		<xsl:text> &lt;br /&gt;</xsl:text>
 	</xsl:template>
 
 	<!-- append newlines to paragraphs -->	
 	<xsl:template match="p" mode="twiki">
 		<xsl:text>&#xA;&#xA;</xsl:text>
 		<xsl:variable name="res">
-			<xsl:apply-templates select="node()" mode="twiki" />
+			<xsl:call-template name="safe-eat-leading-space">
+				<xsl:with-param name="str">
+					<xsl:apply-templates select="node()" mode="twiki" />
+				</xsl:with-param>
+			</xsl:call-template>
 		</xsl:variable>
-		<xsl:value-of select="normalize-space($res)" />
+		<xsl:value-of select="$res" />
 		<xsl:text>&#xA;</xsl:text>
 	</xsl:template>
 	
 	<!-- don't touch the content within pre tags, make it verbatim -->
 	<xsl:template match="pre" mode="twiki">
-		<xsl:text>&lt;verbatim&gt;</xsl:text>
-		<!--<xsl:value-of select="node()" />-->
+		<xsl:text>&#xA;&lt;verbatim&gt;</xsl:text>
 		<xsl:apply-templates select="." mode="as-is" />
-		<xsl:text>&lt;/verbatim&gt; </xsl:text>
+		<xsl:text>&lt;/verbatim&gt;&#xA;</xsl:text>
 	</xsl:template>
 	
 	<!-- bold -->
@@ -153,9 +154,13 @@ http://www.gnu.org/licenses/lgpl.txt
 			<xsl:otherwise>
 				<xsl:text>*</xsl:text>
 				<xsl:variable name="res">
-					<xsl:apply-templates select="node()" mode="twiki" />
+					<xsl:call-template name="normalize-outer">
+						<xsl:with-param name="str">
+							<xsl:apply-templates select="node()" mode="twiki" />
+						</xsl:with-param>
+					</xsl:call-template>
 				</xsl:variable>
-				<xsl:value-of select="normalize-space($res)" /><!-- required for trimming leading and trailing spaces -->
+				<xsl:value-of select="$res" />
 				<xsl:text>*</xsl:text>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -173,9 +178,13 @@ http://www.gnu.org/licenses/lgpl.txt
 			<xsl:otherwise>
 				<xsl:text>_</xsl:text>
 				<xsl:variable name="res">
-					<xsl:apply-templates select="node()" mode="twiki" />
+					<xsl:call-template name="normalize-outer">
+						<xsl:with-param name="str">
+							<xsl:apply-templates select="node()" mode="twiki" />
+						</xsl:with-param>
+					</xsl:call-template>
 				</xsl:variable>
-				<xsl:value-of select="normalize-space($res)" /><!-- required for trimming leading and trailing spaces -->
+				<xsl:value-of select="$res" />
 				<xsl:text>_</xsl:text>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -193,9 +202,13 @@ http://www.gnu.org/licenses/lgpl.txt
 			<xsl:otherwise>
 				<xsl:text>=</xsl:text>
 				<xsl:variable name="res">
-					<xsl:apply-templates select="node()" mode="twiki" />
+					<xsl:call-template name="normalize-outer">
+						<xsl:with-param name="str">
+							<xsl:apply-templates select="node()" mode="twiki" />
+						</xsl:with-param>
+					</xsl:call-template>
 				</xsl:variable>
-				<xsl:value-of select="normalize-space($res)" /><!-- required for trimming leading and trailing spaces -->
+				<xsl:value-of select="$res" />
 				<xsl:text>=</xsl:text>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -205,31 +218,48 @@ http://www.gnu.org/licenses/lgpl.txt
 	<xsl:template name="bold-italic">
 		<xsl:text>__</xsl:text>
 		<xsl:variable name="res">
-			<xsl:apply-templates select="*/* | */text()" mode="twiki" />
+			<xsl:call-template name="normalize-outer">
+				<xsl:with-param name="str">
+					<xsl:apply-templates select="*/* | */text()" mode="twiki" />
+				</xsl:with-param>
+			</xsl:call-template>
 		</xsl:variable>
-		<xsl:value-of select="normalize-space($res)" /><!-- required for trimming leading and trailing spaces -->
+		<xsl:value-of select="$res" /><!-- required for trimming leading and trailing spaces -->
 		<xsl:text>__</xsl:text>
 	</xsl:template>
 	
 	<xsl:template name="bold-code">
 		<xsl:text>==</xsl:text>
 		<xsl:variable name="res">
-			<xsl:apply-templates select="*/* | */text()" mode="twiki" />
+			<xsl:call-template name="normalize-outer">
+				<xsl:with-param name="str">
+					<xsl:apply-templates select="*/* | */text()" mode="twiki" />
+				</xsl:with-param>
+			</xsl:call-template>
 		</xsl:variable>
-		<xsl:value-of select="normalize-space($res)" /><!-- required for trimming leading and trailing spaces -->
+		<xsl:value-of select="$res" /><!-- required for trimming leading and trailing spaces -->
 		<xsl:text>==</xsl:text>
 	</xsl:template>
 	
 	<!-- lists -->
 	<xsl:template match="li" mode="twiki">
 		<xsl:variable name="res">
-			<xsl:apply-templates select="node()" mode="twiki" />
+			<xsl:call-template name="normalize-outer">
+				<xsl:with-param name="str">
+					<xsl:apply-templates select="node()" mode="twiki" />
+				</xsl:with-param>
+			</xsl:call-template>
 		</xsl:variable>
 		<xsl:choose>
 			<xsl:when test="starts-with($res, '&#xA;')"><xsl:value-of select="$res" /></xsl:when>
 			<xsl:otherwise>
 				<xsl:text>&#xA;</xsl:text>
-				<xsl:call-template name="string-repeat"><xsl:with-param name="str"><xsl:text>   </xsl:text></xsl:with-param><xsl:with-param name="cnt" select="count(ancestor::ul) + count(ancestor::ol)" /></xsl:call-template>
+				<xsl:call-template name="string-repeat">
+					<xsl:with-param name="str">
+						<xsl:text>   </xsl:text>
+					</xsl:with-param>
+					<xsl:with-param name="cnt" select="count(ancestor::ul) + count(ancestor::ol)" />
+				</xsl:call-template>
 				<xsl:choose>
 					<xsl:when test="name(..) = 'ul'"><xsl:text>* </xsl:text></xsl:when>
 					<xsl:when test="name(..) = 'ol'">
@@ -423,38 +453,6 @@ http://www.gnu.org/licenses/lgpl.txt
 		</xsl:choose>
 	</xsl:template>	
 	
-	<!-- trim-left; removes all whitespace at the beginning of a string; *obsolete* -->
-	<!--  
-	<xsl:template name="trim-left">
-		<xsl:param name="str"/>
-		<xsl:choose>
-			<xsl:when test="starts-with($str, ' ')">
-				<xsl:call-template name="trim-left">
-					<xsl:with-param name="str" select="substring-after($str, ' ')" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:when test="starts-with($str, '&#xA;')">
-				<xsl:call-template name="trim-left">
-					<xsl:with-param name="str" select="substring-after($str, '&#xA;')" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:when test="starts-with($str, '&#xD;')">
-				<xsl:call-template name="trim-left">
-					<xsl:with-param name="str" select="substring-after($str, '&#xD;')" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:when test="starts-with($str, '&#9;')">
-				<xsl:call-template name="trim-left">
-					<xsl:with-param name="str" select="substring-after($str, '&#x9;')" />
-				</xsl:call-template>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:value-of select="$str"/>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:template>
-	-->
-	
 	<!-- normalize-inner; normale space within a string and remain a whitespace and the begin and end when it was present -->
 	<xsl:template name="normalize-inner">
 		<xsl:param name="str"/>
@@ -482,27 +480,71 @@ http://www.gnu.org/licenses/lgpl.txt
 		</xsl:if>
 	</xsl:template>
 	
-	<!-- produces a compact string, trims newlines and whitespace after the newline -->
-	<!--
-	<xsl:template name="compact-string">
+	<!-- normalize-outer; trim whitespace at the beginning and end of a string but don't touch the leading -->
+	<xsl:template name="normalize-outer">
 		<xsl:param name="str"/>
+		<xsl:variable name="tmp_str">
+			<xsl:value-of select="translate($str, '&#9;&#xA;&#xD;', '   ')" /><!-- translate all to space -->
+		</xsl:variable>
+		<xsl:variable name="begin">
+			<xsl:choose>
+				<xsl:when test="starts-with($tmp_str, ' ')">
+					<xsl:value-of select="string-length($tmp_str) - string-length(substring-after($tmp_str, ' '))" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="0" />
+				</xsl:otherwise>
+			</xsl:choose>			
+		</xsl:variable>
+		<xsl:variable name="end">
+			<xsl:choose>
+				<!-- todo: not fully implemented -->
+				<xsl:when test="substring($tmp_str, string-length($tmp_str)) = ' '">
+					<xsl:value-of select="string-length($tmp_str) - 1" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="string-length($tmp_str)" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:value-of select="substring($str, $begin + 1, $end - $begin)" />
+	</xsl:template>
+	
+	<!-- only strip the leading whitespace when it's only one, used for nicer formatting -->
+	<xsl:template name="safe-eat-leading-space">
+		<xsl:param name="str"/>
+		<xsl:variable name="tmp_str">
+			<xsl:value-of select="translate($str, '&#9;&#xA;&#xD;', '   ')" /><!-- translate all to space -->
+		</xsl:variable>
+		<xsl:variable name="res">
+			<xsl:choose>
+				<!-- doesn't begin with a space -->
+				<xsl:when test="not(starts-with($tmp_str, ' '))">
+					<xsl:value-of select="$str" />
+				</xsl:when>
+				<!-- eat first space  -->
+				<xsl:when test="substring($tmp_str, 2, 1) != ' '">
+					<xsl:value-of select="substring($str, 2)" />
+				</xsl:when>
+				<!-- contains more than one leading space; don't touch -->
+				<xsl:otherwise>
+					<xsl:value-of select="$str" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<!-- perform the same for every new line -->
 		<xsl:choose>
-			<xsl:when test="contains($str, '&#xA;')">
-				<xsl:value-of select="substring-before($str, '&#xA;')"/>
-				<xsl:if test="string-length(substring-before($str, '&#xA;')) > 0"><xsl:text> </xsl:text></xsl:if>
-				<xsl:call-template name="compact-string">
-					<xsl:with-param name="str">
-						<xsl:call-template name="trim-left">
-							<xsl:with-param name="str" select="substring-after($str, '&#xA;')" />
-						</xsl:call-template>
-					</xsl:with-param>
+			<xsl:when test="contains($res, '&#xA;')">
+				<xsl:value-of select="substring-before($res, '&#xA;')"/>
+				<xsl:text>&#xA;</xsl:text><!-- don't eat the newline -->
+				<xsl:call-template name="safe-eat-leading-space">
+					<xsl:with-param name="str" select="substring-after($res, '&#xA;')" />
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:value-of select="$str"/>
+				<xsl:value-of select="$res"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	-->
 	
 </xsl:stylesheet> 
