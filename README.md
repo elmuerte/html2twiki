@@ -10,11 +10,11 @@ This is an XSLT file to translate basic HTML code to TWiki markup.
 
 These examples use the browser's XSLT engine. If your browser doesn't support XSLT then you won't see the translation.
 
-* [example1.html](example1.html) -> [translated](example1.html.txt)
-* [example2.html](example2.html) -> [translated](example2.html.txt)
-* [links.html](links.html) -> [translated](links.html.txt)
-* [lists.html](lists.html) -> [translated](lists.html.txt)
-* [paragraphs.html](paragraphs.html) -> [translated](paragraphs.html.txt)
+* [example1.html](examples/example1.html) -> [translated](examples/example1.html.txt)
+* [example2.html](examples/example2.html) -> [translated](examples/example2.html.txt)
+* [links.html](examples/links.html) -> [translated](examples/links.html.txt)
+* [lists.html](examples/lists.html) -> [translated](examples/lists.html.txt)
+* [paragraphs.html](examples/paragraphs.html) -> [translated](examples/paragraphs.html.txt)
 
 ## Copyright
 
