@@ -1,0 +1,19 @@
+
+ 
+---+  White space testing 
+ 
+
+This text should all be on one line 
+ 
+
+This text contains a lot of white space between words, but it should be normalized. 
+ 
+
+This <u>text</u> *contains* tags with _spaces_ between them. 
+ 
+
+This is a <u>combination</u> of _the last_ two. 
+ 
+
+Initial whitespace without a leading newline
+ 

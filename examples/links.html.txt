@@ -1,0 +1,17 @@
+
+ 
+---+ Link tests
+ 
+
+[[http://www.google.com][Link to google]]
+ 
+
+[[WebHome][Local link to the page WebHome]]
+ 
+
+[[#LocalAnchor][A link to a local anchor]]
+ 
+
+#LocalAnchor
+The local anchor
+ 

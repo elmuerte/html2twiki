@@ -1,0 +1,49 @@
+
+ 
+---+ This is an HTML 2 TWiki example
+ 
+
+The [[http://www.w3.org/TR/xslt][XSLT]] supports a wide collection of HTML tags like basic formatting tags to lists. This should be on the same line. 
+ 
+---++ Simple formatting
+ 
+
+*This is bold*
+ 
+
+*This is strong*
+ 
+
+_This is italic_
+ 
+
+_This is emphasized_
+ 
+
+=This is code=
+ 
+---
+ 
+
+==This is bold code==
+ 
+
+__This is bold italic__
+ 
+
+__This is bold emphasized__
+ 
+<verbatim>
+The following text
+	is preformatted
+		and therefor should
+	be shown verbatim
+
+    < four spaces
+      < six spaces
+	< one tab
+
+<b>This text is shown bold in HTML but really AS IS in TWiki.
+This is due to a limitation but it's a nice side effect.</b>
+</verbatim>
+ 
